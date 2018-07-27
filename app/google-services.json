@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "271839618004",
+    "firebase_url": "https://ek-scholar.firebaseio.com",
+    "project_id": "ek-scholar",
+    "storage_bucket": "ek-scholar.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:271839618004:android:f1ccd78d41791e83",
+        "android_client_info": {
+          "package_name": "ekscholar.ekdorn.ekscholar"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "271839618004-a4rdbar092uuvv0s9hnagu7h4iqkm99h.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "ekscholar.ekdorn.ekscholar",
+            "certificate_hash": "7062326b8d9c685c3f504b9dfa4a8ffd442b5c0e"
+          }
+        },
+        {
+          "client_id": "271839618004-9fb9ak510so7ijsgbgte8tg4v6l2bqi7.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCA6BZXRyUy8lutBnvPfaI5v64n4vfAP6A"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "271839618004-9fb9ak510so7ijsgbgte8tg4v6l2bqi7.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
