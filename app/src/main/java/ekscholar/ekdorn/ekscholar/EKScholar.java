@@ -89,7 +89,7 @@ public class EKScholar extends AppCompatActivity {
         adapter = new DaysAdapter(days, this);
         cl.add(Calendar.DATE, (-cl.get(Calendar.DAY_OF_WEEK) + 2 + (weekCounter * 7)));
         date.setText(cl.get(Calendar.WEEK_OF_MONTH) + "th week" + "\n" + cl.getDisplayName(Calendar.MONTH, Calendar.LONG, Locale.getDefault())
-                + " " + cl.get(Calendar.YEAR));
+                + " " + cl.get(Calendar.YEAR)); //
         fillDaysIn(cl);
 
         week.setLayoutManager(new LinearLayoutManager(this));
