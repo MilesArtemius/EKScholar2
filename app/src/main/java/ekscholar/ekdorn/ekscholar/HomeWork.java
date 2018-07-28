@@ -5,16 +5,18 @@ import android.graphics.Color;
 import android.media.Image;
 import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
+import android.util.Log;
 
 import com.google.firebase.firestore.DocumentSnapshot;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class HomeWork {
+public class HomeWork implements Serializable {
     private static final String key_type = "type";
     private static final String value_text = "text";
     private static final String value_pic = "pic"; //TODO: something...
@@ -22,6 +24,8 @@ public class HomeWork {
     private static final String key_answers = "answer";
     private static final String key_subject = "subject";
     private static final String key_title  = "title";
+    private static final String key_mark  = "mark";
+    private static final String key_answersAct = "answers_act";
 
     public String taskT; //task
     public Image taskI; //task
@@ -31,6 +35,8 @@ public class HomeWork {
 
     public int mark;
     public int back;
+    public List<String> answersAct;
+    public String id;
 
     public boolean isSection;
 
@@ -40,14 +46,19 @@ public class HomeWork {
         if (section) {
             this.name = name;
         } else {
-            if (((String) value.get(key_type)).equals(value_text)) {
-                this.taskT = (String) value.get(key_task);
-            } else {
-                //this.taskI = ...
+            if (value != null) {
+                if (((String) value.get(key_type)).equals(value_text)) {
+                    this.taskT = (String) value.get(key_task);
+                } else {
+                    //this.taskI = ...
+                }
+                this.answers = (ArrayList<String>) value.get(key_answers);
+                this.name = (String) value.get(key_subject);
+                this.title = (String) value.get(key_title);
+                this.mark = ((Number) value.get(key_mark)).intValue();
+                this.answersAct = (ArrayList<String>) value.get(key_answersAct);
+                this.id = (String) value.getId();
             }
-            this.answers = (ArrayList<String>) value.get(key_answers);
-            this.name = (String) value.get(key_subject);
-            this.title = (String) value.get(key_title);
         }
     }
 
@@ -76,6 +87,10 @@ public class HomeWork {
                 this.back = ContextCompat.getColor(app, R.color.colorN);
                 break;
         }
+    }
+
+    public void setAnswers(List<String> ans) {
+        this.answersAct = ans;
     }
 
     @Override

@@ -232,7 +232,8 @@ public class LoginActivity extends AppCompatActivity {
         if (user != null) {
             Intent signInIntent = new Intent();
             signInIntent.setClass(this, EKScholar.class );
-            setResult(EKScholar.loginCode, signInIntent);
+            setResult(RESULT_CANCELED, signInIntent);
+            this.finish();
         } else {
             LoginActivity.this.recreate();
         }

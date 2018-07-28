@@ -44,6 +44,6 @@
         app:layout_anchor="@id/app_bar"
         app:layout_anchorGravity="bottom|end"
         android:clickable="false"
-        app:srcCompat="@android:drawable/ic_dialog_email" />
+        app:srcCompat="@drawable/mark0ico" />
 
 </android.support.design.widget.CoordinatorLayout>

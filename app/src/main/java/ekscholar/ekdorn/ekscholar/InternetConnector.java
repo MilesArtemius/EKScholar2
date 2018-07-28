@@ -2,6 +2,7 @@ package ekscholar.ekdorn.ekscholar;
 
 import android.support.annotation.NonNull;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -11,6 +12,7 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.SetOptions;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -31,41 +33,20 @@ public class InternetConnector {
 
     onLoadedListener onLoaded;
 
-    public static InternetConnector get(onLoadedListener listener) {
+    public static InternetConnector get() {
         if (now == null) {
             now = new InternetConnector();
             now.db = FirebaseFirestore.getInstance();
-            now.onLoaded = listener;
         }
         return now;
     }
 
-    private InternetConnector() {}
-
-    public void loadByDate(int date) {
-        resultOld = new HashMap<>();
-
-        db.collection(students_coll)
-                .document(FirebaseAuth.getInstance().getCurrentUser().getEmail())
-                .collection(task_coll)
-                .document(String.valueOf(date))
-                .get()
-                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                        if (task.isSuccessful()) {
-                            resultOld = (HashMap<String, Object>) task.getResult().getData().get(task_coll);
-
-                            Log.d("TAG", task.getResult().getId() + " => " + task.getResult().getData());
-                            onLoaded.onComplete(resultOld);
-
-
-                        } else {
-                            Log.w("TAG", "Error getting documents.", task.getException());
-                        }
-                    }
-                });
+    public InternetConnector setOnLoaded (onLoadedListener listener) {
+        now.onLoaded = listener;
+        return now;
     }
+
+    private InternetConnector() {}
 
     public void loadByDate(final Calendar cl) {
         result = new ArrayList<>();
@@ -98,10 +79,23 @@ public class InternetConnector {
                 });
     }
 
-    //public void push
+    public void push(HomeWork modified) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("mark", modified.mark);
+        data.put("answers_act", modified.answersAct);
+
+        CollectionReference qu = db.collection(students_coll)
+                .document(FirebaseAuth.getInstance().getCurrentUser().getEmail())
+                .collection(task_coll);
+        qu.document(modified.id).set(data, SetOptions.merge()).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                Log.e("TAG", "onComplete: updated");
+            }
+        });
+    }
 
     public interface onLoadedListener {
-        public void onComplete(List<DocumentSnapshot> loaded, Calendar cl);
-        public void onComplete(Map<String, Object> loaded);
+        void onComplete(List<DocumentSnapshot> loaded, Calendar cl);
     }
 }
