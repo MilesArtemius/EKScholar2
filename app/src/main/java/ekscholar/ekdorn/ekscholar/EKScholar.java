@@ -1,8 +1,7 @@
 package ekscholar.ekdorn.ekscholar;
 
-import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.Intent;
-import android.location.Location;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -16,18 +15,22 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.google.firebase.Timestamp;
+import com.google.common.collect.Lists;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
 public class EKScholar extends AppCompatActivity {
+    public static final int loginCode = 42;
+    public static final int scrollingCode = 64;
 
     ProgressBar progress;
     LinearLayout terra;
@@ -36,8 +39,10 @@ public class EKScholar extends AppCompatActivity {
     Button forthButton;
     RecyclerView week;
 
-    DaysAdapter adapter;
-    ArrayList<DaysAdapter.CountriesModel> days;
+    static DaysAdapter adapter;
+    static ArrayList<HomeWork> days;
+
+    int workingOn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,7 +53,7 @@ public class EKScholar extends AppCompatActivity {
         if (currentUser == null) {
             Intent signInIntent = new Intent();
             signInIntent.setClass(this, LoginActivity.class);
-            startActivity(signInIntent);
+            startActivityForResult(signInIntent, loginCode);
         }
 
         setContentView(R.layout.activity_ekscholar);
@@ -60,12 +65,15 @@ public class EKScholar extends AppCompatActivity {
         forthButton = (Button) findViewById(R.id.button_forth);
         week = (RecyclerView) findViewById(R.id.week);
 
+        if (days != null) System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" + Arrays.toString(days.toArray()));
+
         days = new ArrayList<>();
-        adapter = new DaysAdapter(days, this);
+        adapter = new DaysAdapter(days);
 
         Calendar cl = Calendar.getInstance();
-        cl.setFirstDayOfWeek(Calendar.MONDAY);
-        cl.add(Calendar.DATE, -Calendar.getInstance().get(Calendar.DAY_OF_WEEK) + 1);
+        cl.setFirstDayOfWeek(Calendar.SUNDAY);
+        Log.e("sos ", String.valueOf(-cl.get(Calendar.DAY_OF_WEEK)));
+        cl.add(Calendar.DATE, (-cl.get(Calendar.DAY_OF_WEEK) + 2));
         fillDaysIn(cl);
 
         week.setLayoutManager(new LinearLayoutManager(this));
@@ -74,17 +82,30 @@ public class EKScholar extends AppCompatActivity {
         showProgress(true);
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        System.out.println("GOT");
+        if (resultCode == RESULT_OK) {
+            days.get(workingOn).setMark(data.getIntExtra(DaysAdapter.mark, 0), this);
+            week.getAdapter().notifyItemChanged(workingOn);
+        }
+    }
+
     private void fillDaysIn(Calendar cl) {
-        if (cl.get(Calendar.DAY_OF_WEEK) <= 6) {
+        System.out.println(cl.get(Calendar.DAY_OF_WEEK));
+        if (cl.get(Calendar.DAY_OF_WEEK) > 1) {
             InternetConnector.get(new InternetConnector.onLoadedListener() {
                 @Override
                 public void onComplete(List<DocumentSnapshot> loaded, Calendar cl) {
 
-                    days.add(new DaysAdapter.CountriesModel(
+                    days.add(new HomeWork( null,
                             cl.get(Calendar.DATE) + " " + cl.getDisplayName(Calendar.DAY_OF_WEEK, Calendar.LONG, Locale.getDefault()),
                             true));
                     for (int j = 0; j < loaded.size(); j++) {
-                        days.add(new DaysAdapter.CountriesModel(loaded.get(j).get("title").toString(), false));
+                        HomeWork item = new HomeWork(loaded.get(j), null, false);
+                        item.setMark(0, EKScholar.this);
+                        days.add(item);
                     }
 
                     cl.add(Calendar.DATE, 1);
@@ -96,6 +117,7 @@ public class EKScholar extends AppCompatActivity {
                 }
             }).loadByDate(cl);
         } else {
+            Log.e("TAG", "no data updated");
             adapter.notifyDataSetChanged();
             showProgress(false);
         }
@@ -106,4 +128,104 @@ public class EKScholar extends AppCompatActivity {
         week.setVisibility(show ? View.GONE : View.VISIBLE);
     }
 
+    public static ArrayList<HomeWork> getDays() {
+        return days;
+    }
+
+
+
+
+
+
+    public class DaysAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+        public static final String flag = "pos";
+        public static final String mark = "mrk";
+
+        public static final int SECTION_VIEW = 0;
+        public static final int CONTENT_VIEW = 1;
+
+        ArrayList<HomeWork> mHomeWorkList;
+
+        public DaysAdapter(ArrayList<HomeWork> mHomeWorkList) {
+
+            this.mHomeWorkList = mHomeWorkList;
+        }
+
+        @Override
+        public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+            if (viewType == SECTION_VIEW) {
+                return new SectionHeaderViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.item_header_title, parent, false));
+            } else {
+                return new ItemViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.item_name, parent, false));
+            }
+        }
+
+        @Override
+        public int getItemViewType(int position) {
+            if (mHomeWorkList.get(position).isSection) {
+                return SECTION_VIEW;
+            } else {
+                return CONTENT_VIEW;
+            }
+        }
+
+        @Override
+        public void onBindViewHolder(final RecyclerView.ViewHolder holder, int position) {
+
+            Context context = EKScholar.this;
+            if (context != null) {
+                if (getItemViewType(position) == SECTION_VIEW) {
+                    DaysAdapter.SectionHeaderViewHolder sectionHeaderViewHolder = (DaysAdapter.SectionHeaderViewHolder) holder;
+                    HomeWork sectionItem = mHomeWorkList.get(position);
+                    sectionHeaderViewHolder.headerTitleTextview.setText(sectionItem.name);
+                } else {
+                    ItemViewHolder itemViewHolder = (ItemViewHolder) holder;
+                    HomeWork current = mHomeWorkList.get(position);
+                    itemViewHolder.nameTextview.setText(current.title);
+                    itemViewHolder.subjectTextview.setText(current.name);
+                    itemViewHolder.markTextview.setText(String.valueOf(current.mark));
+                    itemViewHolder.markTextview.setBackgroundColor(current.back);
+                }
+            }
+        }
+
+        @Override
+        public int getItemCount() {
+            return mHomeWorkList.size();
+        }
+
+
+
+        public class ItemViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+            public TextView subjectTextview;
+            public TextView nameTextview;
+            public TextView markTextview;
+
+            public ItemViewHolder(View itemView) {
+                super(itemView);
+                itemView.setOnClickListener(this);
+                subjectTextview = (TextView) itemView.findViewById(R.id.subjectTextview);
+                nameTextview = (TextView) itemView.findViewById(R.id.nameTextview);
+                markTextview = (TextView) itemView.findViewById(R.id.markTextview);
+            }
+
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent();
+                intent.setClass(EKScholar.this, ScrollingActivity.class);
+                intent.putExtra(flag, getAdapterPosition());
+                workingOn = getAdapterPosition();
+                EKScholar.this.startActivityForResult(intent, scrollingCode);
+            }
+        }
+
+        public class SectionHeaderViewHolder extends RecyclerView.ViewHolder {
+            TextView headerTitleTextview;
+
+            public SectionHeaderViewHolder(View itemView) {
+                super(itemView);
+                headerTitleTextview = (TextView) itemView.findViewById(R.id.headerTitleTextview);
+            }
+        }
+    }
 }

@@ -73,6 +73,8 @@ public class InternetConnector {
         String dateKey = String.valueOf(10000 * cl.get(Calendar.YEAR) +
                 100 * (cl.get(Calendar.MONTH) + 1) + cl.get(Calendar.DATE));
 
+        Log.e("TAG", "fillDaysIn: " + dateKey);
+
         CollectionReference qu = db.collection(students_coll)
                 .document(FirebaseAuth.getInstance().getCurrentUser().getEmail())
                 .collection(task_coll);
@@ -95,6 +97,8 @@ public class InternetConnector {
                     }
                 });
     }
+
+    //public void push
 
     public interface onLoadedListener {
         public void onComplete(List<DocumentSnapshot> loaded, Calendar cl);

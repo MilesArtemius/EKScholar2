@@ -1,5 +1,7 @@
 package ekscholar.ekdorn.ekscholar;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -24,18 +26,21 @@ public class ScrollingActivity extends AppCompatActivity {
     HomeWork hw;
     ArrayList<String> done;
 
+    int number;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_scrolling);
+
+        number = this.getIntent().getIntExtra(EKScholar.DaysAdapter.flag, 0);
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setEnabled(false);
         //fab set text "mark"
-
-        System.out.println("uuu");
 
         int date = 10000 * Calendar.getInstance().get(Calendar.YEAR) +
                 100 * (Calendar.getInstance().get(Calendar.MONTH)+1) +
@@ -45,21 +50,15 @@ public class ScrollingActivity extends AppCompatActivity {
         answers = findViewById(R.id.answers);
         complete = findViewById(R.id.apply);
 
-        hw = new HomeWork(date, new HomeWork.TimeTaking() {
-            @Override
-            public void onComplete() {
-                task.setText(hw.task);
-
-                for (int i = 0; i < hw.answers.size(); i++) {
-                    EditText answer = new EditText(ScrollingActivity.this);
-                    answer.setHint("Answer for question " + (i+1));
-                    answers.addView(answer);
-                }
-
-                done = hw.answers;
-            }
-        });
-
+        hw = EKScholar.getDays().get(number);
+        System.out.println(hw);
+        task.setText(hw.taskT);
+        for (int i = 0; i < hw.answers.size(); i++) {
+            EditText answer = new EditText(ScrollingActivity.this);
+            answer.setHint("Answer for question " + (i+1));
+            answers.addView(answer);
+        }
+        done = hw.answers;
 
 
         complete.setOnClickListener(new View.OnClickListener() {
@@ -77,6 +76,12 @@ public class ScrollingActivity extends AppCompatActivity {
                     }
                 }
                 Toast.makeText(ScrollingActivity.this, "You made " + mistakes + " mistakes!", Toast.LENGTH_SHORT).show();
+
+                Intent intent = new Intent();
+                intent.putExtra(EKScholar.DaysAdapter.mark, (5 - mistakes < 1) ? 1 : (5 - mistakes));
+                System.out.println("INTENTING");
+                ScrollingActivity.this.setResult(Activity.RESULT_OK, intent);
+                ScrollingActivity.this.finish();
             }
         });
     }

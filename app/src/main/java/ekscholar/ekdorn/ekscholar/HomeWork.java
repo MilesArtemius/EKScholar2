@@ -1,5 +1,11 @@
 package ekscholar.ekdorn.ekscholar;
 
+import android.content.Context;
+import android.graphics.Color;
+import android.media.Image;
+import android.support.annotation.Nullable;
+import android.support.v4.content.ContextCompat;
+
 import com.google.firebase.firestore.DocumentSnapshot;
 
 import java.util.ArrayList;
@@ -12,40 +18,77 @@ public class HomeWork {
     private static final String key_type = "type";
     private static final String value_text = "text";
     private static final String value_pic = "pic"; //TODO: something...
-
     private static final String key_task = "task";
+    private static final String key_answers = "answer";
+    private static final String key_subject = "subject";
+    private static final String key_title  = "title";
 
-    private static final String key_answers = "answers";
+    public String taskT; //task
+    public Image taskI; //task
+    public ArrayList<String> answers; //answers
+    public String name; //subject
+    public String title; //title
 
-    public String task;
-    public ArrayList<String> answers;
-    private TimeTaking tt;
+    public int mark;
+    public int back;
 
-    public HomeWork(final int date, TimeTaking newtt) {
-        tt = newtt;
-        InternetConnector.get(new InternetConnector.onLoadedListener() {
-            @Override
-            public void onComplete(Map<String, Object> loaded) {
-                System.out.println(date);
-                System.out.println(loaded);
-                HashMap<String, Object> data = (HashMap<String, Object>) loaded.get(String.valueOf(date));
-                System.out.println(data);
-                if (data.get(key_type).equals(value_text)) {
-                    task = data.get(key_task).toString();
-                } //else
+    public boolean isSection;
 
-                answers = (ArrayList<String>) data.get(key_answers);
+    public HomeWork(@Nullable DocumentSnapshot value, @Nullable String name, boolean section) {
+        this.isSection = section;
 
-                System.out.println("hw created");
-                tt.onComplete();
+        if (section) {
+            this.name = name;
+        } else {
+            if (((String) value.get(key_type)).equals(value_text)) {
+                this.taskT = (String) value.get(key_task);
+            } else {
+                //this.taskI = ...
             }
-
-            @Override
-            public void onComplete(List<DocumentSnapshot> loaded, Calendar cl) {}
-        }).loadByDate(date);
+            this.answers = (ArrayList<String>) value.get(key_answers);
+            this.name = (String) value.get(key_subject);
+            this.title = (String) value.get(key_title);
+        }
     }
 
-    public interface TimeTaking {
-        public void onComplete();
+    public void setMark(int mrk, Context app) {
+        this.mark = mrk;
+        switch (mrk) {
+            case 0:
+                this.back = ContextCompat.getColor(app, R.color.colorN);
+                break;
+            case 1:
+                this.back = ContextCompat.getColor(app, R.color.colorTooBad);
+                break;
+            case 2:
+                this.back = ContextCompat.getColor(app, R.color.colorBad);
+                break;
+            case 3:
+                this.back = ContextCompat.getColor(app, R.color.colorOK);
+                break;
+            case 4:
+                this.back = ContextCompat.getColor(app, R.color.colorGood);
+                break;
+            case 5:
+                this.back = ContextCompat.getColor(app, R.color.colorPerfect);
+                break;
+            default:
+                this.back = ContextCompat.getColor(app, R.color.colorN);
+                break;
+        }
+    }
+
+    @Override
+    public String toString() {
+        return "HomeWork{" +
+                "taskT='" + taskT + '\'' +
+                ", taskI=" + taskI +
+                ", answers=" + answers +
+                ", name='" + name + '\'' +
+                ", title='" + title + '\'' +
+                ", mark=" + mark +
+                ", back=" + back +
+                ", isSection=" + isSection +
+                '}';
     }
 }

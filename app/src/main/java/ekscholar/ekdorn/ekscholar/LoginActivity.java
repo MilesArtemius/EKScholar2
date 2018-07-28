@@ -229,9 +229,13 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void exitRestart(FirebaseUser user) {
-        Intent signInIntent = new Intent();
-        signInIntent.setClass(this, (user != null) ? EKScholar.class : LoginActivity.class);
-        startActivity(signInIntent);
+        if (user != null) {
+            Intent signInIntent = new Intent();
+            signInIntent.setClass(this, EKScholar.class );
+            setResult(EKScholar.loginCode, signInIntent);
+        } else {
+            LoginActivity.this.recreate();
+        }
     }
 
     @Override
